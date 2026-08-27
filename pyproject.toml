@@ -8,6 +8,7 @@ version = "0.2.0"
 description = "Deterministic MCP servers for the Semantic Scholar Academic Graph, Recommendations, and Datasets APIs."
 readme = "README.md"
 requires-python = ">=3.11"
+license = "0BSD"
 
 dependencies = [
     "mcp>=2,<3",
