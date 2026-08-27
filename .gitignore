@@ -1,0 +1,41 @@
+# Virtual environments
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Tests / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Tool caches
+.ruff_cache/
+.mypy_cache/
+.pyright/
+
+# Packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Editor
+.vscode/
+
+# Secrets / local environment
+.env
+.env.*
+!.env.example
+
+# Semantic Scholar MCP runtime state
+rate-limit.lock
+last-request.txt
+
+# Temporary files
+*.tmp
+*.log
