@@ -178,6 +178,224 @@ To increment `major` version, resetting both `minor` and `patch` to 0, and rebui
 .\version.ps1 major
 ```
 
+## MCP Client Configuration
+
+The three Semantic Scholar MCP servers can be configured either:
+
+* **project-locally**, so they are available only within a particular repository; or
+* **user-globally**, so they are available across repositories.
+
+The servers are:
+
+* `s2ag` — Semantic Scholar Academic Graph
+* `s2_recommendations` — Semantic Scholar Recommendations API
+* `s2_datasets` — Semantic Scholar Datasets API
+
+The examples below assume this repository is installed at:
+
+```text
+C:\MyRepos\Python\SemanticScholar_MCP
+```
+
+Adjust the path as needed.
+
+The examples deliberately invoke the virtual environment's Python interpreter with `python -m ...` rather than invoking the generated `semantic-scholar-*.exe` console launchers directly. This is recommended during local development on Windows because running console launchers can prevent `pip` from replacing them during an editable reinstall.
+
+### Codex
+
+Codex supports both user-global and project-local `config.toml` files.
+
+#### Project-local Codex configuration
+
+Create or edit:
+
+```text
+<project>/.codex/config.toml
+```
+
+For example:
+
+```toml
+[mcp_servers.s2ag]
+command = 'C:\MyRepos\Python\SemanticScholar_MCP\.venv\Scripts\python.exe'
+args = ["-m", "semantic_scholar_mcp.s2ag.server"]
+startup_timeout_sec = 15
+tool_timeout_sec = 120
+enabled = true
+
+[mcp_servers.s2_recommendations]
+command = 'C:\MyRepos\Python\SemanticScholar_MCP\.venv\Scripts\python.exe'
+args = ["-m", "semantic_scholar_mcp.recommendations.server"]
+startup_timeout_sec = 15
+tool_timeout_sec = 120
+enabled = true
+
+[mcp_servers.s2_datasets]
+command = 'C:\MyRepos\Python\SemanticScholar_MCP\.venv\Scripts\python.exe'
+args = ["-m", "semantic_scholar_mcp.datasets.server"]
+startup_timeout_sec = 15
+tool_timeout_sec = 120
+enabled = true
+```
+
+Project-scoped Codex configuration is loaded only for projects that Codex considers trusted.
+
+#### User-global Codex configuration
+
+To make the servers available to Codex across projects, place the same configuration in:
+
+```text
+~/.codex/config.toml
+```
+
+On Windows this is normally:
+
+```text
+%USERPROFILE%\.codex\config.toml
+```
+
+For example:
+
+```text
+C:\Users\<username>\.codex\config.toml
+```
+
+The MCP server blocks themselves are identical to the project-local example above.
+
+#### Verify Codex configuration
+
+From a terminal:
+
+```powershell
+codex mcp list
+```
+
+Individual registrations can also be inspected with:
+
+```powershell
+codex mcp get s2ag
+codex mcp get s2_recommendations
+codex mcp get s2_datasets
+```
+
+### Claude Code
+
+Claude Code distinguishes between project-shared and user-scoped MCP servers.
+
+#### Project-local / project-shared Claude configuration
+
+Create:
+
+```text
+<project>/.mcp.json
+```
+
+with:
+
+```json
+{
+  "mcpServers": {
+    "s2ag": {
+      "command": "C:\\MyRepos\\Python\\SemanticScholar_MCP\\.venv\\Scripts\\python.exe",
+      "args": [
+        "-m",
+        "semantic_scholar_mcp.s2ag.server"
+      ]
+    },
+    "s2_recommendations": {
+      "command": "C:\\MyRepos\\Python\\SemanticScholar_MCP\\.venv\\Scripts\\python.exe",
+      "args": [
+        "-m",
+        "semantic_scholar_mcp.recommendations.server"
+      ]
+    },
+    "s2_datasets": {
+      "command": "C:\\MyRepos\\Python\\SemanticScholar_MCP\\.venv\\Scripts\\python.exe",
+      "args": [
+        "-m",
+        "semantic_scholar_mcp.datasets.server"
+      ]
+    }
+  }
+}
+```
+
+This file can be committed to the consuming repository when the MCP configuration is intended to be shared with other users of that repository.
+
+#### User-global Claude configuration
+
+For global Claude Code configuration, the preferred approach is to let Claude Code manage the user-scoped MCP registrations.
+
+Run:
+
+```powershell
+claude mcp add --scope user s2ag -- "C:\MyRepos\Python\SemanticScholar_MCP\.venv\Scripts\python.exe" -m semantic_scholar_mcp.s2ag.server
+
+claude mcp add --scope user s2_recommendations -- "C:\MyRepos\Python\SemanticScholar_MCP\.venv\Scripts\python.exe" -m semantic_scholar_mcp.recommendations.server
+
+claude mcp add --scope user s2_datasets -- "C:\MyRepos\Python\SemanticScholar_MCP\.venv\Scripts\python.exe" -m semantic_scholar_mcp.datasets.server
+```
+
+Claude Code currently stores user-scoped MCP configuration in:
+
+```text
+~/.claude.json
+```
+
+On Windows:
+
+```text
+%USERPROFILE%\.claude.json
+```
+
+Using `claude mcp add --scope user` is preferred over manually editing this file because Claude Code owns additional state in `.claude.json`.
+
+Verify the registrations with:
+
+```powershell
+claude mcp list
+```
+
+If a particular Claude Code version has trouble loading user-scoped MCP servers, the project `.mcp.json` configuration is the simplest fallback.
+
+### Semantic Scholar API Key
+
+Many Semantic Scholar operations can work without authentication. Operations requiring an API key use:
+
+```text
+SEMANTIC_SCHOLAR_API_KEY
+```
+
+Do not commit the key to an MCP configuration file.
+
+On Windows, it may be persisted as a user environment variable:
+
+```powershell
+[Environment]::SetEnvironmentVariable(
+    "SEMANTIC_SCHOLAR_API_KEY",
+    "YOUR_API_KEY",
+    "User"
+)
+```
+
+Restart VS Code, Codex, Claude Code, or other MCP hosts after setting the variable so newly launched MCP processes inherit it.
+
+The MCP servers automatically use the key when it is present and otherwise remain unauthenticated where Semantic Scholar permits anonymous access.
+
+### Project-local vs. user-global
+
+A useful rule is:
+
+| Scope   | Codex                  | Claude Code                   | Recommended when                                                   |
+| ------- | ---------------------- | ----------------------------- | ------------------------------------------------------------------ |
+| Project | `.codex/config.toml`   | `.mcp.json`                   | The repository explicitly depends on these research tools          |
+| User    | `~/.codex/config.toml` | `claude mcp add --scope user` | You want Semantic Scholar available in many unrelated repositories |
+
+For a research repository whose agents are explicitly expected to perform literature discovery, project-local configuration is usually preferable because the available research tooling travels with the repository.
+
+For general personal access to Semantic Scholar from arbitrary projects, user-global configuration is more convenient.
+
+
 ## Shared Rate Limiting
 
 Semantic Scholar's introductory authenticated rate limit applies across API endpoints rather than independently to each MCP server.
@@ -205,7 +423,7 @@ tests
 
 The limiter should coordinate these processes rather than maintaining an independent clock in each one.
 
-## Retry Behavior
+### Retry Behavior
 
 Transient upstream failures may be retried using bounded exponential backoff.
 
@@ -453,7 +671,7 @@ ruff format .
 Live Semantic Scholar tests are marked separately:
 
 ```powershell
-pytest -m integration
+pytest --run-integration
 ```
 
 Ordinary unit tests should mock HTTP interactions and must not consume Semantic Scholar API quota.
@@ -475,25 +693,6 @@ expected response normalization
 Tests should also verify the absence of hidden behavior.
 
 For example, a single citation request should generate one citation API operation—not automatically request subsequent pages or references.
-
-## MCP Configuration
-
-After installation, the three servers can be registered independently with MCP clients.
-
-Conceptually:
-
-```toml
-[mcp_servers.s2ag]
-command = 'C:\MyRepos\Python\SemanticScholar_MCP\.venv\Scripts\semantic-scholar-s2ag.exe'
-
-[mcp_servers.s2_recommendations]
-command = 'C:\MyRepos\Python\SemanticScholar_MCP\.venv\Scripts\semantic-scholar-recommendations.exe'
-
-[mcp_servers.s2_datasets]
-command = 'C:\MyRepos\Python\SemanticScholar_MCP\.venv\Scripts\semantic-scholar-datasets.exe'
-```
-
-Using the installed console scripts avoids duplicating Python module invocation details in each client configuration.
 
 ## Relationship to Research Tools
 
