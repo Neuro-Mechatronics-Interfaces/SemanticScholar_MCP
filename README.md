@@ -201,6 +201,41 @@ Adjust the path as needed.
 
 The examples deliberately invoke the virtual environment's Python interpreter with `python -m ...` rather than invoking the generated `semantic-scholar-*.exe` console launchers directly. This is recommended during local development on Windows because running console launchers can prevent `pip` from replacing them during an editable reinstall.
 
+### Automated user-global registration
+
+An optional installer can write the user-global Codex and Claude Code configuration for you, so you do not have to edit `~/.codex/config.toml` and `~/.claude.json` by hand.
+
+Install it with the `install` extra (included in `dev`):
+
+```powershell
+python -m pip install -e ".[install]"
+```
+
+Then run:
+
+```powershell
+semantic-scholar-install
+```
+
+This upserts the three Semantic Scholar servers into:
+
+* `~/.codex/config.toml` (Codex, `[mcp_servers.*]` tables), and
+* `~/.claude.json` (Claude Code, `mcpServers` entries).
+
+The interpreter path is derived from the environment the installer runs in (`sys.executable`), so the written configuration points at that virtual environment's `python.exe` and invokes each server as `python -m <module>`. Only the three Semantic Scholar entries are inserted or overwritten; all other content is preserved, and for Codex the file's comments and formatting are kept intact. A `.bak` copy of each edited file is written before changes.
+
+Useful flags:
+
+```powershell
+semantic-scholar-install --dry-run    # Print the resulting config without writing
+semantic-scholar-install --codex-only # Update only ~/.codex/config.toml
+semantic-scholar-install --claude-only # Update only ~/.claude.json
+```
+
+After running the installer, verify the registrations with `codex mcp list` and `claude mcp list`.
+
+Because Claude Code owns additional state in `~/.claude.json`, the manual `claude mcp add --scope user` flow documented below remains available if you prefer to let Claude Code manage its own file.
+
 ### Codex
 
 Codex supports both user-global and project-local `config.toml` files.
