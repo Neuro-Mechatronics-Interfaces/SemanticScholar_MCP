@@ -12,12 +12,18 @@ virtual environment the package was installed into.
 Existing configuration is preserved: only the three Semantic Scholar server
 entries are inserted or overwritten (upsert). All other content is left
 untouched, and for Codex the file's comments and formatting are preserved.
+
+If ``SEMANTIC_SCHOLAR_API_KEY`` is not already present in the environment, the
+installer offers to store it as a persistent user environment variable (Windows
+only). The key is never written into any MCP configuration file.
 """
 
 from __future__ import annotations
 
 import argparse
+import getpass
 import json
+import os
 import shutil
 import sys
 from pathlib import Path
@@ -28,6 +34,8 @@ SERVERS: dict[str, str] = {
     "s2_recommendations": "semantic_scholar_mcp.recommendations.server",
     "s2_datasets": "semantic_scholar_mcp.datasets.server",
 }
+
+API_KEY_ENV = "SEMANTIC_SCHOLAR_API_KEY"
 
 # Codex-specific per-server timeouts, matching the documented example.
 _CODEX_STARTUP_TIMEOUT_SEC = 15
@@ -149,6 +157,100 @@ def update_claude(python: str, *, dry_run: bool) -> str:
     return rendered
 
 
+def _persist_user_env_var(name: str, value: str) -> None:
+    """Persist ``name=value`` as a user environment variable on Windows.
+
+    Writes ``HKEY_CURRENT_USER\\Environment`` via ``winreg`` (avoiding the
+    1024-character truncation of ``setx``) and broadcasts ``WM_SETTINGCHANGE``
+    so newly launched processes inherit the value. This matches the ``"User"``
+    scope of ``[Environment]::SetEnvironmentVariable``.
+    """
+
+    if sys.platform != "win32":
+        raise RuntimeError("Persistent environment variables are only supported on Windows.")
+
+    import winreg
+
+    with winreg.OpenKey(
+        winreg.HKEY_CURRENT_USER,
+        "Environment",
+        0,
+        winreg.KEY_SET_VALUE,
+    ) as key:
+        winreg.SetValueEx(key, name, 0, winreg.REG_SZ, value)
+
+    # Also set it for the current process so a following run sees it as present.
+    os.environ[name] = value
+
+    # Notify running processes (Explorer, shells) that the environment changed.
+    try:
+        import ctypes
+
+        HWND_BROADCAST = 0xFFFF
+        WM_SETTINGCHANGE = 0x001A
+        SMTO_ABORTIFHUNG = 0x0002
+        result = ctypes.c_long()
+        ctypes.windll.user32.SendMessageTimeoutW(
+            HWND_BROADCAST,
+            WM_SETTINGCHANGE,
+            0,
+            "Environment",
+            SMTO_ABORTIFHUNG,
+            5000,
+            ctypes.byref(result),
+        )
+    except Exception:
+        # The variable is persisted regardless; the broadcast is best-effort.
+        pass
+
+
+def configure_api_key(*, prompt: bool) -> None:
+    """Ensure an API key is available, optionally prompting for one.
+
+    When ``SEMANTIC_SCHOLAR_API_KEY`` is already set in the environment, this
+    reports that and does nothing. Otherwise, if ``prompt`` is true and the
+    session is interactive, it asks for a key (input is hidden and may be left
+    empty to skip) and persists it as a user environment variable.
+    """
+
+    existing = os.environ.get(API_KEY_ENV, "").strip()
+    if existing:
+        print(f"{API_KEY_ENV} is already set; leaving it unchanged.")
+        return
+
+    if not prompt:
+        return
+
+    if not sys.stdin or not sys.stdin.isatty():
+        print(f"{API_KEY_ENV} is not set. Run in an interactive terminal to be prompted for it.")
+        return
+
+    print(f"\n{API_KEY_ENV} is not set.")
+    print("Paste your Semantic Scholar API key to store it, or press Enter to skip.")
+    try:
+        key = getpass.getpass(f"{API_KEY_ENV}: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        print("\nSkipped API key configuration.")
+        return
+
+    if not key:
+        print("Skipped API key configuration; continuing without an API key.")
+        return
+
+    if sys.platform != "win32":
+        print(
+            f"Set the key manually so future sessions inherit it, e.g.:\n"
+            f'  export {API_KEY_ENV}="{key[:4]}..."'
+        )
+        return
+
+    _persist_user_env_var(API_KEY_ENV, key)
+    print(
+        f"Stored {API_KEY_ENV} as a user environment variable. "
+        "Restart terminals and MCP hosts so they inherit it."
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="semantic-scholar-install",
@@ -174,6 +276,12 @@ def main(argv: list[str] | None = None) -> int:
         "--claude-only",
         action="store_true",
         help="Update only the Claude Code configuration.",
+    )
+    parser.add_argument(
+        "--no-api-key",
+        dest="api_key",
+        action="store_false",
+        help="Do not check for or prompt for SEMANTIC_SCHOLAR_API_KEY.",
     )
     args = parser.parse_args(argv)
 
@@ -203,6 +311,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args.dry_run:
         print(f"MCP servers point at: {python} -m <module>")
+
+    if args.api_key and not args.dry_run:
+        configure_api_key(prompt=True)
+    elif args.api_key and args.dry_run:
+        configure_api_key(prompt=False)
 
     return 0
 
