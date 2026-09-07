@@ -43,10 +43,7 @@ async def recommend_for_paper(
 
     result = await _client.request(
         "GET",
-        (
-            "/recommendations/v1/papers/forpaper/"
-            f"{_paper_segment(paper_id)}"
-        ),
+        (f"/recommendations/v1/papers/forpaper/{_paper_segment(paper_id)}"),
         params={
             "from": pool,
             "limit": limit,
@@ -55,9 +52,7 @@ async def recommend_for_paper(
     )
 
     if not isinstance(result, dict):
-        raise TypeError(
-            "Semantic Scholar returned an unexpected recommendations response."
-        )
+        raise TypeError("Semantic Scholar returned an unexpected recommendations response.")
 
     return result
 
@@ -80,11 +75,7 @@ async def recommend_from_examples(
         )
     ]
 
-    negative = [
-        normalize_paper_id(value)
-        for value in (negative_paper_ids or [])
-        if value.strip()
-    ]
+    negative = [normalize_paper_id(value) for value in (negative_paper_ids or []) if value.strip()]
 
     result = await _client.request(
         "POST",
@@ -100,9 +91,7 @@ async def recommend_from_examples(
     )
 
     if not isinstance(result, dict):
-        raise TypeError(
-            "Semantic Scholar returned an unexpected recommendations response."
-        )
+        raise TypeError("Semantic Scholar returned an unexpected recommendations response.")
 
     return result
 

@@ -74,9 +74,7 @@ async def test_get_papers_rejects_more_than_500(
     monkeypatch.setattr(server, "_client", fake)
 
     with pytest.raises(ValueError, match="at most 500"):
-        await server.get_papers(
-            [str(i) for i in range(501)]
-        )
+        await server.get_papers([str(i) for i in range(501)])
 
     fake.request.assert_not_awaited()
 

@@ -29,9 +29,7 @@ async def list_releases() -> list[str]:
     )
 
     if not isinstance(result, list):
-        raise TypeError(
-            "Semantic Scholar returned an unexpected releases response."
-        )
+        raise TypeError("Semantic Scholar returned an unexpected releases response.")
 
     return cast(list[str], result)
 
@@ -47,9 +45,7 @@ async def get_release(
     )
 
     if not isinstance(result, dict):
-        raise TypeError(
-            "Semantic Scholar returned an unexpected release response."
-        )
+        raise TypeError("Semantic Scholar returned an unexpected release response.")
 
     return result
 
@@ -75,9 +71,7 @@ async def get_dataset(
     )
 
     if not isinstance(result, dict):
-        raise TypeError(
-            "Semantic Scholar returned an unexpected dataset response."
-        )
+        raise TypeError("Semantic Scholar returned an unexpected dataset response.")
 
     return result
 
@@ -105,9 +99,7 @@ async def get_diffs(
     )
 
     if not isinstance(result, dict):
-        raise TypeError(
-            "Semantic Scholar returned an unexpected dataset-diff response."
-        )
+        raise TypeError("Semantic Scholar returned an unexpected dataset-diff response.")
 
     return result
 

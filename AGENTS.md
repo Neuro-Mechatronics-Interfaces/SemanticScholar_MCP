@@ -132,8 +132,7 @@ rather than the deprecated v1 `FastMCP` interface.
 Each `server.py` should expose:
 
 ```python
-def main() -> None:
-    ...
+def main() -> None: ...
 ```
 
 so it can be registered as a console-script entry point.

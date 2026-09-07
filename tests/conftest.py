@@ -37,13 +37,12 @@ def pytest_collection_modifyitems(config, items) -> None:
     if config.getoption("--run-integration"):
         return
 
-    skip = pytest.mark.skip(
-        reason="Use --run-integration to run live API tests."
-    )
+    skip = pytest.mark.skip(reason="Use --run-integration to run live API tests.")
 
     for item in items:
         if "integration" in item.keywords:
             item.add_marker(skip)
+
 
 @pytest.fixture
 def no_rate_limiter() -> NoopRateLimiter:

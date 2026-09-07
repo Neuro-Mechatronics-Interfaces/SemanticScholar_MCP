@@ -52,9 +52,7 @@ async def test_live_unauthenticated_paper_lookup(
 async def test_live_authenticated_dataset_release() -> None:
     """Exercise an authenticated API operation only when a key is available."""
     if not os.getenv("SEMANTIC_SCHOLAR_API_KEY"):
-        pytest.skip(
-            "SEMANTIC_SCHOLAR_API_KEY is not configured."
-        )
+        pytest.skip("SEMANTIC_SCHOLAR_API_KEY is not configured.")
 
     client = SemanticScholarClient()
 

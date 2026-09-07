@@ -74,10 +74,7 @@ async def test_tool_schema_exposes_pagination_explicitly() -> None:
     ) as client:
         result = await client.list_tools()
 
-    tools = {
-        tool.name: tool
-        for tool in result.tools
-    }
+    tools = {tool.name: tool for tool in result.tools}
 
     citations = tools["get_citations"]
 
@@ -95,10 +92,7 @@ async def test_bulk_search_has_token_but_no_limit() -> None:
     ) as client:
         result = await client.list_tools()
 
-    tools = {
-        tool.name: tool
-        for tool in result.tools
-    }
+    tools = {tool.name: tool for tool in result.tools}
 
     bulk_search = tools["search_papers"]
 

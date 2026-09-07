@@ -69,9 +69,7 @@ class SemanticScholarClient:
     ) -> JsonResponse:
         """Perform exactly one semantic API operation, plus bounded retries."""
         if not path.startswith("/") or "://" in path:
-            raise ValueError(
-                "path must be an absolute Semantic Scholar API path, not a URL."
-            )
+            raise ValueError("path must be an absolute Semantic Scholar API path, not a URL.")
 
         if require_api_key and not self.api_key:
             raise AuthenticationRequiredError(
@@ -141,11 +139,7 @@ class SemanticScholarClient:
     ) -> dict[str, Any] | None:
         if not params:
             return None
-        return {
-            key: value
-            for key, value in params.items()
-            if value is not None
-        }
+        return {key: value for key, value in params.items() if value is not None}
 
     def _retry_delay(self, retry_index: int) -> float:
         base = self.retry_policy.backoff_seconds(retry_index)

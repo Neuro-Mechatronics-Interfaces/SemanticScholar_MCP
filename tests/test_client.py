@@ -26,9 +26,7 @@ async def test_unauthenticated_request_does_not_send_api_key(
         raising=False,
     )
 
-    route = respx_mock.get(
-        "https://api.semanticscholar.org/graph/v1/paper/test"
-    ).mock(
+    route = respx_mock.get("https://api.semanticscholar.org/graph/v1/paper/test").mock(
         return_value=httpx.Response(
             200,
             json={
@@ -63,9 +61,7 @@ async def test_authenticated_request_sends_api_key(
     respx_mock,
     no_rate_limiter,
 ) -> None:
-    route = respx_mock.get(
-        "https://api.semanticscholar.org/graph/v1/paper/test"
-    ).mock(
+    route = respx_mock.get("https://api.semanticscholar.org/graph/v1/paper/test").mock(
         return_value=httpx.Response(
             200,
             json={"paperId": "test"},
@@ -118,9 +114,7 @@ async def test_not_found_is_translated(
     respx_mock,
     no_rate_limiter,
 ) -> None:
-    route = respx_mock.get(
-        "https://api.semanticscholar.org/graph/v1/paper/missing"
-    ).mock(
+    route = respx_mock.get("https://api.semanticscholar.org/graph/v1/paper/missing").mock(
         return_value=httpx.Response(
             404,
             json={"message": "Paper not found"},
@@ -151,9 +145,7 @@ async def test_authentication_error_is_not_retried(
     respx_mock,
     no_rate_limiter,
 ) -> None:
-    route = respx_mock.get(
-        "https://api.semanticscholar.org/graph/v1/paper/test"
-    ).mock(
+    route = respx_mock.get("https://api.semanticscholar.org/graph/v1/paper/test").mock(
         return_value=httpx.Response(
             401,
             json={"message": "Invalid API key"},
@@ -195,9 +187,7 @@ async def test_429_honors_retry_after_and_retries(
     respx_mock,
     no_rate_limiter,
 ) -> None:
-    route = respx_mock.get(
-        "https://api.semanticscholar.org/graph/v1/paper/test"
-    ).mock(
+    route = respx_mock.get("https://api.semanticscholar.org/graph/v1/paper/test").mock(
         side_effect=[
             httpx.Response(
                 429,
@@ -246,9 +236,7 @@ async def test_429_becomes_error_after_retries_exhausted(
     respx_mock,
     no_rate_limiter,
 ) -> None:
-    route = respx_mock.get(
-        "https://api.semanticscholar.org/graph/v1/paper/test"
-    ).mock(
+    route = respx_mock.get("https://api.semanticscholar.org/graph/v1/paper/test").mock(
         return_value=httpx.Response(
             429,
             headers={"Retry-After": "0"},
@@ -290,9 +278,7 @@ async def test_non_json_success_is_rejected(
     respx_mock,
     no_rate_limiter,
 ) -> None:
-    respx_mock.get(
-        "https://api.semanticscholar.org/graph/v1/paper/test"
-    ).mock(
+    respx_mock.get("https://api.semanticscholar.org/graph/v1/paper/test").mock(
         return_value=httpx.Response(
             200,
             text="not-json",

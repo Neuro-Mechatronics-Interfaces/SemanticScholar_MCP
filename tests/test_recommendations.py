@@ -24,10 +24,7 @@ async def test_recommend_for_paper(
 
     fake.request.assert_awaited_once_with(
         "GET",
-        (
-            "/recommendations/v1/papers/forpaper/"
-            "DOI:10.1038/nature12373"
-        ),
+        ("/recommendations/v1/papers/forpaper/DOI:10.1038/nature12373"),
         params={
             "from": "recent",
             "limit": 25,

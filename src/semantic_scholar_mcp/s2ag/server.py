@@ -50,9 +50,7 @@ def _search_filters(
     fields_of_study: list[str] | None,
 ) -> dict[str, Any]:
     if min_citation_count is not None and min_citation_count < 0:
-        raise ValueError(
-            "min_citation_count must be >= 0."
-        )
+        raise ValueError("min_citation_count must be >= 0.")
 
     return {
         "fields": comma_separated(fields),
@@ -81,9 +79,7 @@ async def get_paper(
     )
 
     if not isinstance(result, dict):
-        raise TypeError(
-            "Semantic Scholar returned an unexpected paper response."
-        )
+        raise TypeError("Semantic Scholar returned an unexpected paper response.")
 
     return result
 
@@ -115,9 +111,7 @@ async def get_papers(
     )
 
     if not isinstance(result, list):
-        raise TypeError(
-            "Semantic Scholar returned an unexpected paper-batch response."
-        )
+        raise TypeError("Semantic Scholar returned an unexpected paper-batch response.")
 
     return result
 
@@ -168,9 +162,7 @@ async def search_papers(
     )
 
     if not isinstance(result, dict):
-        raise TypeError(
-            "Semantic Scholar returned an unexpected bulk-search response."
-        )
+        raise TypeError("Semantic Scholar returned an unexpected bulk-search response.")
 
     return result
 
@@ -226,9 +218,7 @@ async def search_papers_relevance(
     )
 
     if not isinstance(result, dict):
-        raise TypeError(
-            "Semantic Scholar returned an unexpected relevance-search response."
-        )
+        raise TypeError("Semantic Scholar returned an unexpected relevance-search response.")
 
     return result
 
@@ -250,11 +240,7 @@ async def get_citations(
 
     result = await _client.request(
         "GET",
-        (
-            f"/graph/v1/paper/"
-            f"{_paper_segment(paper_id)}"
-            f"/citations"
-        ),
+        (f"/graph/v1/paper/{_paper_segment(paper_id)}/citations"),
         params={
             "fields": comma_separated(fields),
             "offset": offset,
@@ -264,9 +250,7 @@ async def get_citations(
     )
 
     if not isinstance(result, dict):
-        raise TypeError(
-            "Semantic Scholar returned an unexpected citations response."
-        )
+        raise TypeError("Semantic Scholar returned an unexpected citations response.")
 
     return result
 
@@ -287,11 +271,7 @@ async def get_references(
 
     result = await _client.request(
         "GET",
-        (
-            f"/graph/v1/paper/"
-            f"{_paper_segment(paper_id)}"
-            f"/references"
-        ),
+        (f"/graph/v1/paper/{_paper_segment(paper_id)}/references"),
         params={
             "fields": comma_separated(fields),
             "offset": offset,
@@ -300,9 +280,7 @@ async def get_references(
     )
 
     if not isinstance(result, dict):
-        raise TypeError(
-            "Semantic Scholar returned an unexpected references response."
-        )
+        raise TypeError("Semantic Scholar returned an unexpected references response.")
 
     return result
 
@@ -322,9 +300,7 @@ async def get_author(
     )
 
     if not isinstance(result, dict):
-        raise TypeError(
-            "Semantic Scholar returned an unexpected author response."
-        )
+        raise TypeError("Semantic Scholar returned an unexpected author response.")
 
     return result
 
@@ -356,9 +332,7 @@ async def get_authors(
     )
 
     if not isinstance(result, list):
-        raise TypeError(
-            "Semantic Scholar returned an unexpected author-batch response."
-        )
+        raise TypeError("Semantic Scholar returned an unexpected author-batch response.")
 
     return result
 
@@ -389,9 +363,7 @@ async def search_authors(
     )
 
     if not isinstance(result, dict):
-        raise TypeError(
-            "Semantic Scholar returned an unexpected author-search response."
-        )
+        raise TypeError("Semantic Scholar returned an unexpected author-search response.")
 
     return result
 
@@ -413,11 +385,7 @@ async def get_author_papers(
 
     result = await _client.request(
         "GET",
-        (
-            f"/graph/v1/author/"
-            f"{_author_segment(author_id)}"
-            f"/papers"
-        ),
+        (f"/graph/v1/author/{_author_segment(author_id)}/papers"),
         params={
             "fields": comma_separated(fields),
             "offset": offset,
@@ -427,9 +395,7 @@ async def get_author_papers(
     )
 
     if not isinstance(result, dict):
-        raise TypeError(
-            "Semantic Scholar returned an unexpected author-papers response."
-        )
+        raise TypeError("Semantic Scholar returned an unexpected author-papers response.")
 
     return result
 

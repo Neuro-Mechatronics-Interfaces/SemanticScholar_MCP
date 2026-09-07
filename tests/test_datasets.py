@@ -38,9 +38,7 @@ async def test_get_release(
     )
     monkeypatch.setattr(server, "_client", fake)
 
-    await server.get_release(
-        "2026-08-18"
-    )
+    await server.get_release("2026-08-18")
 
     fake.request.assert_awaited_once_with(
         "GET",
@@ -68,10 +66,7 @@ async def test_get_dataset_requires_authenticated_client_operation(
 
     fake.request.assert_awaited_once_with(
         "GET",
-        (
-            "/datasets/v1/release/"
-            "2026-08-18/dataset/papers"
-        ),
+        ("/datasets/v1/release/2026-08-18/dataset/papers"),
         require_api_key=True,
     )
 
@@ -120,9 +115,6 @@ async def test_get_diffs(
 
     fake.request.assert_awaited_once_with(
         "GET",
-        (
-            "/datasets/v1/diffs/"
-            "2026-08-11/to/2026-08-18/papers"
-        ),
+        ("/datasets/v1/diffs/2026-08-11/to/2026-08-18/papers"),
         require_api_key=True,
     )
