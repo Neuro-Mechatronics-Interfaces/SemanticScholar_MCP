@@ -39,3 +39,7 @@ last-request.txt
 # Temporary files
 *.tmp
 *.log
+
+.mcp.json
+.codex
+.claude
