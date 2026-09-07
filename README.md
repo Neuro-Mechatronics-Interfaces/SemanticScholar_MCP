@@ -224,12 +224,24 @@ This upserts the three Semantic Scholar servers into:
 
 The interpreter path is derived from the environment the installer runs in (`sys.executable`), so the written configuration points at that virtual environment's `python.exe` and invokes each server as `python -m <module>`. Only the three Semantic Scholar entries are inserted or overwritten; all other content is preserved, and for Codex the file's comments and formatting are kept intact. A `.bak` copy of each edited file is written before changes.
 
+#### API key prompt
+
+After writing the configuration, the installer checks for `SEMANTIC_SCHOLAR_API_KEY`:
+
+* If the variable is already set in the current environment, it is left unchanged.
+* If it is not set and the installer is running in an interactive terminal, you are prompted to paste your key. The input is hidden, and pressing Enter without typing anything skips this step and continues without an API key.
+
+When you provide a key on Windows, the installer persists it as a **user** environment variable (writing `HKEY_CURRENT_USER\Environment` and broadcasting the environment change, matching `[Environment]::SetEnvironmentVariable(..., "User")`). The key is stored only in the environment — it is never written into any MCP configuration file. Restart terminals and MCP hosts afterward so newly launched processes inherit it.
+
+On non-Windows systems the installer does not persist the variable and instead prints how to set it yourself.
+
 Useful flags:
 
 ```powershell
-semantic-scholar-install --dry-run    # Print the resulting config without writing
-semantic-scholar-install --codex-only # Update only ~/.codex/config.toml
+semantic-scholar-install --dry-run     # Print the resulting config without writing
+semantic-scholar-install --codex-only  # Update only ~/.codex/config.toml
 semantic-scholar-install --claude-only # Update only ~/.claude.json
+semantic-scholar-install --no-api-key  # Skip the SEMANTIC_SCHOLAR_API_KEY check/prompt
 ```
 
 After running the installer, verify the registrations with `codex mcp list` and `claude mcp list`.
